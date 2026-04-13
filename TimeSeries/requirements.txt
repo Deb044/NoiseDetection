@@ -1,0 +1,10 @@
+numpy
+pandas
+matplotlib
+scipy
+statsmodels
+scikit-learn
+jupyterlab
+xgboost
+missingno
+pooch
