@@ -1,61 +1,81 @@
 # Deep Dive Analysis: Time Series Noise Diagnostics and Filtering
 
-## 1. Introduction
-Time series data collected from real-world telemetry (IoT sensors, market ticks, medical EKGs) is inherently noisy. "Noise" consists of unwanted distortions or artifactual variability that corrupts the true underlying signal. The presence of noise heavily degrades downstream modeling tasks, such as forecasting, anomaly detection, and classification. 
+## Overview
+This project presents a deep-dive analysis into time series noise diagnostics and filtering techniques. The primary objective is to define various shapes of time series noise explicitly, develop custom from-scratch algorithms for noise isolation and removal, and benchmark their efficacy. By mathematically proving the downstream performance improvements of rigorous signal filtering, this project underscores the criticality of preprocessing in applications ranging from IoT telemetry to medical monitoring.
 
-Our goal is to explicitly define various shapes of time series noise, develop custom from-scratch algorithms to isolate or remove them, benchmark their efficacy, and mathematically prove the downstream performance improvements of rigorous signal filtering.
+## System Architecture / Workflow
+1. **Signal Generation:** Creation of pure synthetic signals composed of multiple frequency components.
+2. **Noise Injection:** Systematic simulation of real-world noise archetypes (e.g., Gaussian, Spike, Drift, Seasonal, and Missing Data).
+3. **Filtering Pipeline:** Application of various custom-built filtering algorithms (Moving Average, Median Filter, STL Decomposition, Kalman Filter, Fourier Low-Pass) to recover the ground truth.
+4. **Evaluation:** Benchmarking filter performance using robust statistical metrics (RMSE, MAE, SNR) across different data configurations.
+5. **Real-World Applications:** Validating methodologies on actual datasets like the Statsmodels Sunspots Dataset and Scipy ECG datasets.
 
-## 2. Types of Time Series Noise
-We categorized noise into three primary classes, each presenting unique challenges to statistical tools.
-### High-Frequency Noise
-1. **Gaussian/White Noise:** Additive continuous variation sampled from a normal distribution. Extremely common in thermal and radio sensors.
-2. **Spike (Impulse) Noise:** Extremely sharp, high-magnitude, isolated distortions scattered sporadically, often mimicking severe sensor malfunction or network packet corruption.
-### Low-Frequency Artifacts
-3. **Sensor Drift:** Gradual, non-stationary structural shifts over time. Might formulate as a linear gradient or a compounded Random Walk (e.g. sensor hardware degradation).
-4. **Seasonal Interference:** Strong periodic waves unassociated with the target variable (e.g. 50/60Hz AC power buzz on medical sensors).
-### Data Integrity Issues
-5. **Missing/NaN Blocks:** Complete drops in data payload, resulting in localized blackout phases.
+## Methodology / Approach Used
+The methodology involves an empirical analysis comparing algorithmic resilience against specific noise classes:
+*   **High-Frequency Noise Resilience:** Analyzing Gaussian and Spike noise impact, and mitigating through Moving Averages or Median filtering.
+*   **Low-Frequency Artifact Correction:** Correcting Sensor Drift and Seasonal Interference through detrending, classical STL-style decompositions, and Low-Pass Fourier transforms.
+*   **Data Integrity Restoration:** Healing missing values and NaN blocks via linear interpolation. 
+*   **Comparative Analysis:** All evaluations compare the original "clean" proxy against the filtered result based on multiple evaluation matrices over identical window periods.
 
-## 3. Filtering Methods
-We constructed the following mathematical constructs from scratch to counteract specific categories of noise:
+## Dataset Details
+* **Synthetic Signals:** Generated procedurally using trigonometric components (e.g., sine waves with 1Hz, 0.2Hz, 5.0Hz frequency mixes).
+* **Sunspots Dataset (`statsmodels`):** A real-world dataset detailing historical sunspot activity, utilized to observe the effect of missingness and spikes out-of-sample.
+* **ECG Telemetry Dataset (`scipy.datasets`):** Real electrocardiogram data representing complex overlapping noise (respiratory baseline wander, 50Hz AC powerline hum, muscle twitching).
 
-*   **Moving Average:** A basic convolution filter that smooths data by calculating the mean of neighboring data points. Handles Gaussian noise well, but distorts sharp underlying signal shifts.
-*   **Median Filter:** Replaces points with the median of their local neighborhood. Very effective against Spike Noise since massive outliers do not skew the median.
-*   **STL-Like Decomposition:** Isolates the time-series into trend, seasonal, and residual elements, cleanly stripping seasonal interference and drift away from the base function.
-*   **Fourier Low-Pass Filter:** Projects the time-domain signal into the frequency domain (via custom FFT), aggressively muting frequencies beyond a dynamic cutoff threshold. Perfect for Gaussian reduction.
-*   **1D Kalman Filter:** A recursive optimal estimator operating heavily on process vs measurement variances. Ideal for continuous "following" of linear gaussian tracking.
-*   **Linear Interpolation:** Bridges NaN gaps using direct slopes between nearest surviving neighbors.
+## Implementation Details
+The project is built entirely from scratch in Python, utilizing `numpy` for array convolutions and fast mathematical operations.
 
-## 4. Benchmarking Findings
-We systematically injected these 5 noise archetypes into a pure synthetic signal, applying every algorithm cross-matrix. 
+**Algorithms Implemented (`src/filters.py`, `src/noise_generation.py`, `src/evaluation.py`):**
+*   **Filters:**
+    *   *Moving Average Filter:* A basic convolution filter for rapid smoothing.
+    *   *Median Filter:* Robust non-linear outlier replacement, highly effective for spike noise.
+    *   *Classical STL-like Decomposition:* Manual additive separation of trend, seasonality, and residuals.
+    *   *1D Kalman Filter:* Recursive optimal estimation balancing process variance and measurement variance.
+    *   *Fourier Low-Pass Filter (FFT):* Frequency domain projection to completely zero-out components above a critical threshold.
+    *   *Linear Interpolation:* Gap-filling algorithm to traverse NaNs safely.
+*   **Noise Generators:** Functions to selectively add Gaussian, Spike, Random Walk Drift, Linear Drift, Seasonal interference, and Dropouts.
+*   **Evaluation Metrics:** Root Mean Square Error (RMSE), Mean Absolute Error (MAE), and Signal-to-Noise Ratio (SNR).
+*   **External Tools/Models for downstream task validation:** `XGBoost` / `GradientBoostingRegressor` to demonstrate forecast improvements on cleaned datasets.
 
-**Summary Performance:**
-*   **Gaussian Noise** is best treated via **Kalman** or **Fourier LPF**.
-*   **Spike Noise** completely devastates Moving Averages but is nearly perfectly neutralized by the **Median Filter**.
-*   **Seasonal Interference** forces failure upon flat regression techniques, and strictly requires **STL Decomposition** or exact Fourier targeting.
-*   **Missing Blocks** must be processed by **Interpolation**, as FFT and standard convolutions instantly crash down upon NaN barriers. 
+## How to Run the Project
+*Prerequisites:* Ensure you have Python installed with the requirements listed in `requirements.txt`.
 
-## 5. Real World Application & Model Uplift
-To prove real diagnostic value, we evaluated the Sunspots Dataset (courtesy of `statsmodels`).
-1. We artificially degraded it with random severe spike blackouts.
-2. We cleaned the resulting "broken" dataset entirely using our Scratch Median Filter.
-3. Using `XGBoost/GradientBoostingRegressor` to forecast step $t+1$ using steps $t-1, t-2, t-3$, we recorded standard RMSE out-of-sample:
-    *   **RMSE on Clean Ground Truth:** ~12.21
-    *   **RMSE on Damaged Data:** ~19.34
-    *   **RMSE on Filtered Recovery:** ~13.65
+1. **Clone the repository and navigate to the project directory:**
+   ```bash
+   cd TimeSeries
+   ```
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Execute the Jupyter Notebooks sequentially** from the `notebooks/` directory to reproduce the experiments:
+   *   `01_data_and_noise.ipynb`: Explore synthetic generation and noise profiles.
+   *   `02_benchmarking.ipynb`: Run the cross-matrix benchmarking of different algorithms vs. noise.
+   *   `03_real_world_application.ipynb`: Validate uplift using the real-world Sunspots dataset.
+   *   `04_healthcare_application.ipynb`: Perform complex dual-pipeline ECG restitution.
+4. *Optional:* The source implementations can be directly imported from the `src/` modules into your own scripts.
 
-**Conclusion:** Our implementation successfully healed over 80% of the accuracy lost to heavy sensor corruption, validating the mathematical rigour established in our custom filters.
+## Results / Outputs
+*   **Gaussian Noise:** Best mitigated by the **Kalman Filter** or **Fourier LPF**.
+*   **Spike Noise:** Severely distorted convolutions but was nearly perfectly neutralized by the **Median Filter**.
+*   **Seasonal Interference:** Effectively stripped via **STL Decomposition** or targeted FFT filtering.
+*   **Missing Blocks:** Instantaneously break normal algorithms running pure FFT and need prior **Linear Interpolation**.
+*   **Predictive Model Uplift:** On the degraded Sunspot dataset, our Median Filter recovered the majority of predictive accuracy. 
+    *   *RMSE Clean Ground Truth:* ~12.21
+    *   *RMSE Damaged Data:* ~19.34
+    *   *RMSE Filtered Recovery:* ~13.65
+*   **ECG Healthcare Pipeline:** A dual Moving Average (High-Pass trace) + Fourier Low-Pass pipeline effectively wiped baseline wander and powerline hum, restoring >95% of original QRS waveform integrity.
 
-## 6. Healthcare Domain Adaptability: ECG Baseline Restitution
-To demonstrate applicability in life-critical fields, we extended our evaluation to medical telemetry, specifically an Electrocardiogram (ECG) array sourced via `scipy.datasets`. Medical monitors frequently suffer from compound noise overlaps:
+*(Note: Please refer to the respective notebooks for visual outputs, plots, and screenshots charting each filtering stage.)*
 
-*   **Low-Frequency Baseline Wander:** Simulating the patient's breathing cycle causing the electrical baseline to drift up and down.
-*   **Powerline Interference & Muscle Artifacts:** Adding 50Hz AC hum and High-Frequency Gaussian ticks representing the patient's physical twitching.
+## Limitations and Future Scope
+*   **Limitations:** The current filters are predominantly univariate. The customized STL-style decomposition performs well with fixed integer periods but may struggle with variable-frequency seasonality. Simple Kalman implementations assume mostly static process variances and may underperform under highly volatile non-stationary environments.
+*   **Future Scope:** 
+    * Extending architectures to handle multivariate telemetry arrays (sensor fusion).
+    * Incorporating adaptive filtering frameworks (e.g., Extended Kalman Filters or LMS) for non-stationary drifts.
+    * Incorporating deep-learning paradigms like Autoencoders specialized in mapping noisy to clean signal profiles for complex non-linear feature structures.
 
-**The Healthcare Filtering Pipeline:**
-Instead of a single filter, we pipelined two scratch filters together to restore the heart rhythm:
-1.  **High-Pass via Moving Average:** We applied our Moving Average filter with a massive 180-sample window to trace the low-frequency breathing drift cleanly, bypassing sharp QRS heart peaks. Subtracting this trace from the raw signal surgically removed the Baseline Wander.
-2.  **Fourier Low-Pass:** We passed the detrended signal into our FFT filter, setting a severe high-frequency cutoff at 40 Hz. This obliterated the 50 Hz powerline hum and high-frequency muscle noise while preserving the true QRS complexes.
-
-**Result Matrix:**
-We verified structural recovery via strictly measured RMSE and SNR metrics. The combined filtering pipeline consistently restored over 95% of the ECG's original integrity, proving that classical algorithmic filtering is an essential preprocessing step before feeding life-critical telemetry to anomaly detection AIs or automated hospital monitors.
+## References
+* Statsmodels Datasets: `statsmodels.api.datasets`
+* SciPy Library and Signal/Dataset Modules
+* Time Series Analysis and Classical Filtering Theory
