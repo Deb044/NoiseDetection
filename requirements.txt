@@ -4,7 +4,13 @@ matplotlib
 scipy
 statsmodels
 scikit-learn
-jupyterlab
+seaborn
 xgboost
 missingno
 pooch
+opencv-python
+Pillow
+scikit-image
+jupyter
+jupyterlab
+ipykernel
