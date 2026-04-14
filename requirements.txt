@@ -11,6 +11,7 @@ pooch
 opencv-python
 Pillow
 scikit-image
+openpyxl
 jupyter
 jupyterlab
 ipykernel
