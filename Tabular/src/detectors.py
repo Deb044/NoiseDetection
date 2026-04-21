@@ -1,4 +1,4 @@
-"""Core noise and outlier detection methods for tabular data."""
+                                                                
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 def detect_outliers_iqr(data: Iterable[float], multiplier: float = 1.5) -> tuple[list[int], tuple[float, float]]:
-    """Detect outlier indices using the IQR rule."""
+                                                    
     values = np.asarray(list(data), dtype=float)
     q1 = np.percentile(values, 25)
     q3 = np.percentile(values, 75)
@@ -26,7 +26,7 @@ def detect_outliers_iqr(data: Iterable[float], multiplier: float = 1.5) -> tuple
 
 
 def detect_outliers_zscore(data: Iterable[float], threshold: float = 3.0) -> tuple[list[int], list[float]]:
-    """Detect outlier indices by absolute Z-score threshold."""
+                                                               
     values = np.asarray(list(data), dtype=float)
     mean = np.mean(values)
     std = np.std(values)
@@ -44,7 +44,7 @@ def detect_noise_dbscan(
     min_samples: int = 5,
     scale: bool = True,
 ) -> np.ndarray:
-    """Run DBSCAN and return labels where -1 indicates noise."""
+                                                                
     input_df = df.copy()
     if scale:
         input_df = pd.DataFrame(StandardScaler().fit_transform(input_df), columns=df.columns)
@@ -58,7 +58,7 @@ def detect_noise_isolation_forest(
     contamination: float = 0.1,
     random_state: int = 42,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Run Isolation Forest and return labels and decision scores."""
+                                                                     
     model = IsolationForest(contamination=contamination, random_state=random_state)
     labels = model.fit_predict(df)
     scores = model.decision_function(df)

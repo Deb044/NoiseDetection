@@ -1,4 +1,4 @@
-"""Noise generation and heuristic noise-type detection."""
+                                                          
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def add_mixed(img: np.ndarray) -> np.ndarray:
 
 
 def detect_noise(img: np.ndarray) -> str:
-    """Simple heuristic detector used to pick a denoising strategy."""
+                                                                      
     total = img.size
     extreme = np.sum((img <= 5) | (img >= 250))
     ratio = extreme / total

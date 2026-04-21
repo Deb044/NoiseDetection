@@ -1,4 +1,4 @@
-"""End-to-end helpers for applying and comparing denoising pipelines."""
+                                                                        
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from .noise_generation import (
 
 
 def process_image(img: np.ndarray, noise_type: str | None = None) -> tuple[str, str, np.ndarray, np.ndarray]:
-    """Add noise, detect noise type, and apply matching denoiser."""
+                                                                    
     if noise_type is None:
         noise_type = np.random.choice(["gaussian", "salt_pepper", "speckle", "poisson", "uniform", "mixed"])
 
@@ -52,7 +52,7 @@ def process_image(img: np.ndarray, noise_type: str | None = None) -> tuple[str, 
 
 
 def show_triplet(original: np.ndarray, noisy: np.ndarray, clean: np.ndarray, noise_type: str, detected: str) -> None:
-    """Display original, noisy, and denoised images with PSNR."""
+                                                                 
     fig, axes = plt.subplots(1, 3, figsize=(12, 4))
 
     axes[0].imshow(original, cmap="gray")
@@ -73,7 +73,7 @@ def show_triplet(original: np.ndarray, noisy: np.ndarray, clean: np.ndarray, noi
 
 
 def run_basic_folder(folder: str | Path, noise_type: str | None = None, limit: int = 5) -> None:
-    """Run basic adaptive denoising over a folder of images."""
+                                                               
     for path in iter_image_paths(folder, limit):
         original = load_image(path)
         used_noise, detected, noisy, clean = process_image(original, noise_type)
@@ -82,7 +82,7 @@ def run_basic_folder(folder: str | Path, noise_type: str | None = None, limit: i
 
 
 def run_medical_comparison(folder: str | Path, limit: int = 4) -> None:
-    """Compare TV and wavelet denoising on medically styled images."""
+                                                                      
     for path in iter_image_paths(folder, limit):
         original = load_image(path)
         noisy = add_gaussian(original, sigma=20)

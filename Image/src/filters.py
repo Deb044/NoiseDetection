@@ -1,4 +1,4 @@
-"""Denoising filters for natural and medical images."""
+                                                       
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ def remove_speckle(img: np.ndarray) -> np.ndarray:
 
 
 def denoise_tv(img: np.ndarray, weight: float = 40.0, iterations: int = 1000) -> np.ndarray:
-    """Simple iterative TV-like denoising update."""
+                                                    
     u = img.copy()
     f = img.copy()
     dt = 0.125

@@ -1,4 +1,4 @@
-"""Visualization utilities for exploring potential noise in tabular data."""
+                                                                            
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import seaborn as sns
 
 
 def plot_boxplot(series: pd.Series, title: str = "Boxplot for Noise Detection") -> None:
-    """Plot a single-variable boxplot."""
+                                         
     plt.figure(figsize=(10, 6))
     sns.boxplot(x=series, color="lightblue")
     plt.title(title, fontsize=14)
@@ -18,7 +18,7 @@ def plot_boxplot(series: pd.Series, title: str = "Boxplot for Noise Detection") 
 
 
 def plot_histogram_with_zscore(series: pd.Series, title: str = "Histogram with Z-Score Boundaries") -> None:
-    """Plot histogram and annotate mean, +/-2SD, and +/-3SD lines."""
+                                                                     
     values = series.astype(float)
     mean = values.mean()
     std = values.std()
@@ -41,7 +41,7 @@ def plot_histogram_with_zscore(series: pd.Series, title: str = "Histogram with Z
 
 
 def plot_pairplot(df: pd.DataFrame, title: str = "Multivariate Pairplot for Noise Detection") -> None:
-    """Plot pairwise relationships to inspect multivariate anomalies."""
+                                                                        
     grid = sns.pairplot(df, diag_kind="kde", corner=True, plot_kws={"color": "darkblue", "alpha": 0.6})
     grid.figure.suptitle(title, fontsize=16, y=1.02)
     plt.show()

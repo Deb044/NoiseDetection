@@ -1,4 +1,4 @@
-"""Evaluation utilities for tabular noise detection outputs."""
+                                                               
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import numpy as np
 
 
 def summarize_labels(labels: np.ndarray, noise_label: int = -1) -> dict[str, float]:
-    """Return noise count and percentage from a label vector."""
+                                                                
     total = int(labels.shape[0])
     noise_count = int(np.sum(labels == noise_label))
     noise_ratio = (noise_count / total) * 100 if total else 0.0
@@ -21,7 +21,7 @@ def summarize_labels(labels: np.ndarray, noise_label: int = -1) -> dict[str, flo
 
 
 def compare_detection_methods(method_to_indices: Mapping[str, list[int]], total_samples: int) -> dict[str, dict[str, float]]:
-    """Compare methods by detected count and percentage."""
+                                                           
     if total_samples <= 0:
         raise ValueError("total_samples must be greater than 0")
 

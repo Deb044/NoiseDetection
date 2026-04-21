@@ -1,13 +1,11 @@
 import numpy as np
 
 def moving_average(signal, window_size=5):
-    """Applies a moving average filter to the signal."""
     padded = np.pad(signal, (window_size//2, window_size - 1 - window_size//2), mode='edge')
     weights = np.ones(window_size) / window_size
     return np.convolve(padded, weights, mode='valid')
 
 def median_filter(signal, window_size=5):
-    """Applies a median filter, good for removing spike/impulse noise."""
     pad_size = window_size // 2
     padded = np.pad(signal, (pad_size, pad_size), mode='edge')
     result = np.zeros_like(signal)
@@ -16,10 +14,7 @@ def median_filter(signal, window_size=5):
     return result
 
 def classical_decomposition(signal, period):
-    """
-    An STL-like classical additive decomposition from scratch.
-    Extracts trend, seasonal, and residual components.
-    """
+
     window = period if period % 2 != 0 else period + 1
     trend = moving_average(signal, window_size=window)
     
@@ -34,7 +29,7 @@ def classical_decomposition(signal, period):
             season_averages[i % period] += detrended[i]
             counts[i % period] += 1
             
-    # Handle zeros in counts gracefully
+    
     counts[counts == 0] = 1
     season_averages /= counts
     season_averages -= np.mean(season_averages)
@@ -46,14 +41,12 @@ def classical_decomposition(signal, period):
     return trend, seasonal, residual
 
 def kalman_filter_1d(signal, process_variance=1e-3, measurement_variance=1.0):
-    """
-    A simple 1D Kalman filter implemented from scratch.
-    """
+
     n = len(signal)
     x_hat = np.zeros(n)
     P = np.zeros(n)
     
-    # Init with non-NaN if possible
+    
     valid_idx = np.where(~np.isnan(signal))[0]
     if len(valid_idx) > 0:
         x_hat[0] = signal[valid_idx[0]]
@@ -66,11 +59,11 @@ def kalman_filter_1d(signal, process_variance=1e-3, measurement_variance=1.0):
         P_pred = P[k-1] + process_variance
         
         if np.isnan(signal[k]):
-            # If measurement is missing, only do prediction
+            
             x_hat[k] = x_pred
             P[k] = P_pred
         else:
-            # Measurement update
+            
             K = P_pred / (P_pred + measurement_variance)
             x_hat[k] = x_pred + K * (signal[k] - x_pred)
             P[k] = (1 - K) * P_pred
@@ -78,8 +71,7 @@ def kalman_filter_1d(signal, process_variance=1e-3, measurement_variance=1.0):
     return x_hat
 
 def fourier_low_pass_filter(signal, sample_rate, cutoff_freq):
-    """Applies a Fourier low pass filter using FFT."""
-    # If missing data, fill it for FFT to work
+    
     clean_sig = linear_interpolate_missing(signal)
     
     freqs = np.fft.fftfreq(len(clean_sig), d=1/sample_rate)
@@ -92,7 +84,6 @@ def fourier_low_pass_filter(signal, sample_rate, cutoff_freq):
     return np.real(filtered_signal)
 
 def linear_interpolate_missing(signal):
-    """Simple linear interpolation from scratch to handle NaNs."""
     sig = signal.copy()
     nans = np.isnan(sig)
     
